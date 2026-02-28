@@ -1,0 +1,6 @@
+id: bmcr-offer-rules
+name: offer-rules
+display_name: Rules Engine
+module: bmcr
+enabled: true
+version: 2.0.0

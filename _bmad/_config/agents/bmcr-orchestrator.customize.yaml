@@ -1,0 +1,6 @@
+id: bmcr-orchestrator
+name: orchestrator
+display_name: Maestro Estratégico
+module: bmcr
+enabled: true
+version: 2.0.0

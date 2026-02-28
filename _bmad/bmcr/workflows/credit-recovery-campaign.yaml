@@ -1,0 +1,298 @@
+# Credit Recovery Campaign Workflow
+# BMCR v2.0 - Pipeline completo de 14 etapas com 12 agentes
+
+name: credit-recovery-campaign
+description: "Execute a complete credit recovery campaign by processing a batch of overdue clients through the 12-agent pipeline (14 steps)"
+author: "BMAD Agent Builder"
+version: "2.0.0"
+
+# Critical variables from config
+config_source: "{project-root}/_bmad/bmcr/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+document_output_language: "{config_source}:document_output_language"
+date: system-generated
+
+# Workflow components
+installed_path: "{project-root}/_bmad/bmcr/workflows"
+instructions: "{installed_path}/credit-recovery-campaign/instructions.xml"
+validation: "{installed_path}/credit-recovery-campaign/checklist.md"
+
+# Campaign-specific configuration
+campaign_input: "" # CSV file path or CRM event trigger
+campaign_output: "{output_folder}/credit-recovery/campaigns"
+campaign_report: "{campaign_output}/{campaign_id}/report.md"
+campaign_metrics: "{campaign_output}/{campaign_id}/metrics.json"
+audit_log: "{campaign_output}/{campaign_id}/audit.log"
+
+# Integration endpoints
+crm_api_endpoint: "{config_source}:crm_integration"
+whatsapp_api_endpoint: "{config_source}:whatsapp_api"
+orchestration_engine: "{config_source}:orchestration_engine"
+llm_provider: "{config_source}:llm_providers"
+
+# Campaign rules
+max_contact_attempts: "{config_source}:max_contact_attempts"
+contact_interval_hours: "{config_source}:contact_interval_hours"
+compliance_check: "{config_source}:compliance_check"
+lgpd_validation: "{config_source}:lgpd_validation"
+
+# Business rules
+min_overdue_days: "{config_source}:min_overdue_days"
+max_discount_percentage: "{config_source}:max_discount_percentage"
+max_installments: "{config_source}:max_installments"
+recovery_score_threshold: "{config_source}:recovery_score_threshold"
+
+standalone: true
+
+# Workflow structure
+workflow:
+  steps:
+    - id: "step_0_strategic_planning"
+      name: "Strategic Campaign Planning"
+      agent: "orchestrator"
+      description: "Define campaign objectives, segmentation, contact strategies"
+      inputs:
+        campaign_id: "${campaign_input.id}"
+        target_portfolio: "${campaign_input.portfolio_segment}"
+        objectives:
+          target_recovery_rate: 0.30
+          target_roi: 2.50
+          max_campaign_duration_days: 90
+      outputs:
+        - campaign_plan
+        - segmentation_rules
+        - contact_strategy
+        - success_criteria
+      kpis:
+        - planning_time: "< 10 minutes"
+        - segmentation_coverage: "100%"
+    
+    - id: "step_1_identification"
+      name: "Customer Identification & Authentication"
+      agent: "identification"
+      description: "Authenticate customers via CPF + birthdate + 2FA when needed"
+      inputs:
+        client_list: "${step_0_strategic_planning.campaign_plan.client_list}"
+        authentication_method: "cpf_birthdate_2fa"
+        max_attempts: 3
+      outputs:
+        - authenticated_clients
+        - failed_authentication
+        - fraud_alerts
+      kpis:
+        - authentication_success_rate: ">= 85%"
+        - avg_authentication_time: "< 60 seconds"
+    
+    - id: "step_2_debt_consultation"
+      name: "Debt Status Consultation"
+      agent: "debt"
+      description: "Query full debt portfolio, check prescription, consolidate debts"
+      inputs:
+        authenticated_clients: "${step_1_identification.authenticated_clients}"
+        consolidate: true
+        check_prescription: true
+        prescription_years: 5
+      outputs:
+        - debt_portfolio
+        - prescription_alerts
+        - consolidation_opportunities
+      kpis:
+        - query_time: "< 30 seconds"
+        - prescription_detection_rate: "100%"
+    
+    - id: "step_3_compliance_validation"
+      name: "LGPD & CDC Compliance Check"
+      agent: "compliance"
+      description: "Validate compliance with LGPD, CDC, BACEN regulations"
+      inputs:
+        clients: "${step_2_debt_consultation.debt_portfolio}"
+        regulations: ["LGPD", "CDC", "BACEN"]
+      outputs:
+        - compliant_clients
+        - non_compliant_clients
+        - compliance_report
+      kpis:
+        - compliance_rate: "100%"
+        - validation_time: "< 10 seconds"
+    
+    - id: "step_4_knowledge_preparation"
+      name: "Customer Context & Strategy Preparation"
+      agent: "knowledge"
+      description: "Prepare customer context, history, communication strategy"
+      inputs:
+        compliant_clients: "${step_3_compliance_validation.compliant_clients}"
+        include_payment_history: true
+        include_communication_history: true
+        include_psychographic_profile: true
+      outputs:
+        - customer_context
+        - recommended_approach
+        - communication_tone
+      kpis:
+        - context_preparation_time: "< 20 seconds"
+    
+    - id: "step_5_offer_rules_calculation"
+      name: "Business Rules Offer Calculation"
+      agent: "offer-rules"
+      description: "Calculate baseline offers using business rules (VPL, discount matrix)"
+      inputs:
+        customers: "${step_4_knowledge_preparation.customer_context}"
+        discount_matrix: "${config_source}:discount_matrix"
+        min_vpn: 0.00
+      outputs:
+        - baseline_offers
+        - vpn_calculations
+      kpis:
+        - vpn_positive_rate: "100%"
+        - calculation_time: "< 15 seconds"
+    
+    - id: "step_6_educator_objection_handling"
+      name: "Objection Handling (Conditional)"
+      agent: "educator"
+      description: "Handle customer objections during negotiation"
+      condition: "${step_8_offer_ml_optimization.customer_raised_objection == true}"
+      inputs:
+        objection_text: "${recovery_agent.objection_detected}"
+        customer_profile: "${step_4_knowledge_preparation.customer_context}"
+        max_attempts: 3
+      outputs:
+        - objection_resolved
+        - educational_content_sent
+        - conversion_success
+      kpis:
+        - objection_resolution_rate: "40-50%"
+        - nps_post_objection: ">= 4.0"
+    
+    - id: "step_7_communication_engagement"
+      name: "Initial Customer Engagement"
+      agent: "communication"
+      description: "Send initial WhatsApp messages to engage customers"
+      inputs:
+        customers: "${step_5_offer_rules_calculation.baseline_offers}"
+        channel: "whatsapp"
+        message_template: "friendly_personalized"
+      outputs:
+        - messages_sent
+        - delivery_rates
+        - response_rates
+      kpis:
+        - delivery_rate: ">= 95%"
+        - response_rate: ">= 40%"
+    
+    - id: "step_8_offer_ml_optimization"
+      name: "ML Offer Optimization"
+      agent: "offer-ml"
+      description: "Optimize offers using Multi-Armed Bandit reinforcement learning"
+      inputs:
+        baseline_offers: "${step_5_offer_rules_calculation.baseline_offers}"
+        customer_responses: "${step_7_communication_engagement.response_rates}"
+        exploration_rate: 0.20
+        ab_test: true
+      outputs:
+        - optimized_offers
+        - ml_recommendations
+        - ab_test_results
+      kpis:
+        - roi_lift_vs_baseline: ">= +10%"
+        - exploration_balance: "15-20%"
+    
+    - id: "step_9_negotiation_orchestration"
+      name: "Conversational Negotiation (Super Agent)"
+      agent: "recovery"
+      description: "Recovery super agent orchestrates entire customer journey via conversation"
+      inputs:
+        customers: "${step_8_offer_ml_optimization.optimized_offers}"
+        orchestration_mode: "conversational"
+        call_specialized_agents: true
+      outputs:
+        - deals_closed
+        - negotiation_transcripts
+        - customer_satisfaction
+      kpis:
+        - conversion_rate: ">= 25%"
+        - nps: ">= 4.3"
+        - avg_negotiation_time: "< 8 minutes"
+    
+    - id: "step_10_offer_finalization"
+      name: "Offer Finalization & Agreement Terms"
+      agent: "offer-rules"
+      description: "Finalize agreed-upon offer terms and generate agreement draft"
+      inputs:
+        closed_deals: "${step_9_negotiation_orchestration.deals_closed}"
+      outputs:
+        - final_agreements
+        - payment_schedules
+        - agreement_drafts
+      kpis:
+        - finalization_time: "< 5 minutes"
+    
+    - id: "step_11_formalization"
+      name: "Digital Signature & Legal Formalization"
+      agent: "formalization"
+      description: "Send agreement for digital signature (Clicksign/DocuSign)"
+      inputs:
+        agreements: "${step_10_offer_finalization.final_agreements}"
+        signature_platform: "clicksign"
+        expiration_hours: 24
+      outputs:
+        - signed_agreements
+        - pending_signatures
+        - expired_signatures
+      kpis:
+        - signature_rate: ">= 85%"
+        - avg_signature_time: "< 15 minutes"
+    
+    - id: "step_12_payment_processing"
+      name: "Payment Execution"
+      agent: "payment"
+      description: "Process first payment (PIX/boleto/card/auto-debit)"
+      inputs:
+        signed_agreements: "${step_11_formalization.signed_agreements}"
+        preferred_payment_method: "pix"
+      outputs:
+        - payments_processed
+        - payment_confirmations
+        - payment_failures
+      kpis:
+        - first_payment_conversion: ">= 90%"
+        - pix_usage: ">= 60%"
+    
+    - id: "step_13_post_deal_activation"
+      name: "Post-Deal Monitoring Activation"
+      agent: "post-deal"
+      description: "Activate post-deal monitoring for all active agreements"
+      inputs:
+        active_agreements: "${step_12_payment_processing.payments_processed}"
+        monitoring_enabled: true
+      outputs:
+        - monitoring_activated
+        - reminder_schedules_created
+      kpis:
+        - activation_success_rate: "100%"
+    
+    - id: "step_14_campaign_analytics"
+      name: "Campaign Analytics & Insights"
+      agent: "monitoring"
+      description: "Generate campaign performance report and insights"
+      inputs:
+        campaign_id: "${campaign_input.id}"
+        all_steps_data: true
+      outputs:
+        - campaign_report
+        - kpi_dashboard
+        - ml_performance_report
+        - recommendations_for_next_campaign
+      kpis:
+        - report_generation_time: "< 5 minutes"
+
+  error_handling:
+    retry_on_failure: true
+    max_retries: 2
+    escalate_critical_errors: true
+    
+  monitoring:
+    collect_metrics_per_step: true
+    real_time_dashboard: true
+    alert_on_bottleneck: true

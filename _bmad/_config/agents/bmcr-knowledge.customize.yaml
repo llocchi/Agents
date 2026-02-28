@@ -1,0 +1,6 @@
+id: bmcr-knowledge
+name: knowledge
+display_name: Sage
+module: bmcr
+enabled: true
+version: 1.0.0

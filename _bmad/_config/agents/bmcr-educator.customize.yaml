@@ -1,0 +1,29 @@
+name: bmcr-educator
+displayName: "Educator 💬"
+module: bmcr
+enabled: true
+version: "2.0.0"
+description: "Agente de Educação Financeira e Tratamento de Objeções"
+
+customization:
+  persona_override: null
+  system_prompt_additions: null
+  menu_additions: null
+  
+settings:
+  max_objection_attempts: 3
+  sentiment_analysis_enabled: true
+  educational_content_library: true
+  escalate_after_attempts: 3
+  
+integrations:
+  nlp_sentiment_analysis_enabled: true
+  objection_classifier_ml_enabled: true
+  educational_content_api_enabled: true
+  alternative_offer_generator_enabled: true
+
+kpis:
+  target_conversion_post_objection: 0.45  # 40-50%
+  target_avg_resolution_time_minutes: 4
+  target_escalation_rate: 0.25            # 20-30%
+  target_nps: 4.0                         # ≥4.0/5

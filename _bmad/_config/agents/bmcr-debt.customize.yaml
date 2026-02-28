@@ -1,0 +1,29 @@
+name: bmcr-debt
+displayName: "Debt Consultant 📑"
+module: bmcr
+enabled: true
+version: "2.0.0"
+description: "Agente de Consulta de Débito e Portfolio"
+
+customization:
+  persona_override: null
+  system_prompt_additions: null
+  menu_additions: null
+  
+settings:
+  check_prescription: true
+  prescription_years: 5  # CDC Art. 43 §1º
+  consolidate_multiple_debts: true
+  show_payment_history: true
+  
+integrations:
+  billing_system_enabled: true
+  debt_calculator_enabled: true
+  payment_history_api_enabled: true
+  prescription_validator_enabled: true
+
+kpis:
+  target_query_time_seconds: 30
+  target_prescription_detection_rate: 1.0  # 100%
+  target_consolidation_rate: 0.60          # ≥60%
+  target_calculation_accuracy: 1.0         # 100%

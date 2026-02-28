@@ -1,0 +1,34 @@
+name: client-negotiation
+description: "Execute negotiation flow for a single client through the complete pipeline with decision tree execution"
+author: "BMAD Agent Builder"
+
+# Critical variables from config
+config_source: "{project-root}/_bmad/bmcr/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+date: system-generated
+
+# Workflow components
+installed_path: "{project-root}/_bmad/bmcr/workflows"
+instructions: "{installed_path}/client-negotiation/instructions.xml"
+validation: "{installed_path}/client-negotiation/checklist.md"
+
+# Client-specific configuration
+client_id: "" # CPF/CNPJ or contract ID
+client_data: "" # Optional: pre-loaded client data
+negotiation_output: "{output_folder}/credit-recovery/negotiations"
+negotiation_log: "{negotiation_output}/{client_id}/negotiation.log"
+interaction_history: "{negotiation_output}/{client_id}/interactions.json"
+
+# Integration endpoints
+crm_api_endpoint: "{config_source}:crm_integration"
+whatsapp_api_endpoint: "{config_source}:whatsapp_api"
+llm_provider: "{config_source}:llm_providers"
+
+# Negotiation rules
+max_attempts: "{config_source}:max_contact_attempts"
+follow_up_interval: "{config_source}:contact_interval_hours"
+compliance_validation: "{config_source}:compliance_check"
+
+standalone: true

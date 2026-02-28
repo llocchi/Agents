@@ -1,0 +1,30 @@
+name: bmcr-formalization
+displayName: "Formalizer 📝"
+module: bmcr
+enabled: true
+version: "2.0.0"
+description: "Agente de Formalização Legal e Assinatura Digital"
+
+customization:
+  persona_override: null
+  system_prompt_additions: null
+  menu_additions: null
+  
+settings:
+  signature_expiration_hours: 24
+  document_retention_years: 7  # CDC requirement
+  encryption_enabled: true
+  legal_registry_enabled: true
+  
+integrations:
+  document_generator_enabled: true
+  digital_signature_platform: "clicksign"  # ou "docusign"
+  signature_validator_enabled: true
+  legal_registry_api_enabled: true
+  secure_storage_enabled: true
+
+kpis:
+  target_signature_rate: 0.85              # ≥85%
+  target_avg_time_to_signature_minutes: 15
+  target_expiration_rate: 0.10             # <10%
+  target_refusal_post_reading: 0.05        # <5%

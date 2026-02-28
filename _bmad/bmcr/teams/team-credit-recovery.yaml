@@ -1,0 +1,31 @@
+# <!-- Powered by BMAD-CORE™ -->
+bundle:
+  name: Credit Recovery Team v2.0
+  icon: 🤝
+  description: Advanced multi-agent credit recovery team with 12 specialized agents covering the complete 14-step pipeline - Strategic Orchestrator (campaign planning), Identification (authentication), Debt Consultant (debt inquiry), Compliance Guardian (LGPD/CDC), Customer Knowledge (context), Offer Rules Engine (business logic), Educator (objection handling), Communication (engagement), Offer ML Optimizer (AI optimization), Recovery Super Agent (conversational orchestration), Formalization (digital signature), Payment Manager (payment processing), Post-Deal Monitor (churn prevention), and Insights Analyst (analytics & ML). Ideal for financial institutions executing AI-powered, compliant, and highly automated credit recovery.
+
+agents:
+  - orchestrator
+  - identification
+  - debt
+  - compliance
+  - knowledge
+  - offer-rules
+  - educator
+  - communication
+  - offer-ml
+  - recovery
+  - formalization
+  - payment
+  - post-deal
+  - monitoring
+
+workflows:
+  - credit-recovery-campaign
+  - post-deal-monitoring
+  - insights-generation
+  - client-negotiation
+  - campaign-monitoring
+  - compliance-audit
+
+party: "./team-credit-recovery-party.csv"

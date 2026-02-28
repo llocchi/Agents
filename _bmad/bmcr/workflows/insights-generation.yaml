@@ -1,0 +1,232 @@
+# Insights Generation Workflow
+# BMCR v2.0 - Analytics, BI e ML Retraining
+
+config_source: _bmad/bmcr/config.yaml
+
+workflow:
+  name: "insights-generation"
+  version: "2.0.0"
+  description: "Coleta métricas, gera insights e retreina modelos ML"
+  
+trigger:
+  type: "scheduled"
+  schedule: "0 2 * * 0"  # Semanalmente aos domingos às 2h
+  description: "Executa análise semanal e retreinamento de ML"
+
+inputs:
+  - name: "analysis_period"
+    type: "string"
+    required: false
+    default: "last_7_days"
+    options: ["last_7_days", "last_30_days", "last_90_days", "custom"]
+    description: "Período de análise"
+  
+  - name: "custom_date_range"
+    type: "object"
+    required: false
+    description: "Range customizado se analysis_period=custom"
+  
+  - name: "retrain_ml_models"
+    type: "boolean"
+    required: false
+    default: true
+    description: "Executar retreinamento de modelos ML"
+
+steps:
+  - id: "collect_pipeline_metrics"
+    agent: "monitoring"
+    action: "collect_metrics"
+    description: "Coleta métricas de todos os 14 steps do pipeline"
+    inputs:
+      date_range: "${inputs.analysis_period}"
+      include_agents: ["identification", "debt", "compliance", "knowledge", "offer-rules", "educator", "communication", "offer-ml", "recovery", "formalization", "payment", "post-deal"]
+    outputs:
+      - step_metrics
+      - conversion_rates
+      - avg_durations
+    
+  - id: "generate_pipeline_dashboard"
+    agent: "monitoring"
+    action: "generate_dashboard"
+    description: "Gera dashboard de pipeline em tempo real"
+    inputs:
+      dashboard_type: "pipeline"
+      metrics: "${collect_pipeline_metrics.step_metrics}"
+    outputs:
+      - dashboard_url
+      - dashboard_id
+    
+  - id: "generate_financial_dashboard"
+    agent: "monitoring"
+    action: "generate_dashboard"
+    description: "Gera dashboard financeiro (ROI, custo por recuperação)"
+    inputs:
+      dashboard_type: "financial"
+      period: "${inputs.analysis_period}"
+    outputs:
+      - financial_dashboard_url
+      - total_recovered
+      - roi_percentage
+      - cost_per_recovery
+    
+  - id: "detect_bottlenecks"
+    agent: "monitoring"
+    action: "detect_bottleneck"
+    description: "Identifica steps com maior drop-off no pipeline"
+    inputs:
+      conversion_rates: "${collect_pipeline_metrics.conversion_rates}"
+      threshold_drop: 0.20  # Alert se drop > 20%
+    outputs:
+      - bottlenecks_identified
+      - recommendations
+    
+  - id: "detect_anomalies"
+    agent: "monitoring"
+    action: "detect_anomalies"
+    description: "Detecta anomalias em métricas críticas (Prophet/Isolation Forest)"
+    inputs:
+      metrics: ["identification_rate", "signature_rate", "payment_conversion", "churn_rate"]
+      lookback_days: 30
+      sensitivity: "medium"
+    outputs:
+      - anomalies_detected
+      - anomaly_details
+      - recommended_actions
+    
+  - id: "calculate_campaign_roi"
+    agent: "monitoring"
+    action: "calculate_campaign_roi"
+    description: "Calcula ROI detalhado de cada campanha ativa"
+    inputs:
+      period: "${inputs.analysis_period}"
+    outputs:
+      - campaign_roi_list
+      - best_performing_campaign
+      - worst_performing_campaign
+    
+  - id: "evaluate_ml_models"
+    agent: "monitoring"
+    action: "get_model_performance"
+    description: "Avalia performance atual dos modelos ML"
+    inputs:
+      models: ["churn_predictor", "objection_classifier", "offer_optimizer"]
+      lookback_days: 30
+    outputs:
+      - model_performance
+      - accuracy_scores
+      - drift_detected
+    
+  - id: "retrain_churn_predictor"
+    agent: "monitoring"
+    action: "retrain_ml_model"
+    description: "Retreina modelo de previsão de churn"
+    condition: "${inputs.retrain_ml_models == true && evaluate_ml_models.drift_detected.churn_predictor == true}"
+    inputs:
+      model_name: "churn_predictor"
+      training_data_days: 90
+      validation_split: 0.20
+    outputs:
+      - new_model_version
+      - accuracy_improvement
+      - deployed
+    
+  - id: "retrain_objection_classifier"
+    agent: "monitoring"
+    action: "retrain_ml_model"
+    description: "Retreina classificador de objeções (BERT fine-tuned)"
+    condition: "${inputs.retrain_ml_models == true}"
+    inputs:
+      model_name: "objection_classifier"
+      training_data_days: 90
+      validation_split: 0.20
+    outputs:
+      - new_model_version
+      - f1_score_improvement
+      - deployed
+    
+  - id: "retrain_offer_optimizer"
+    agent: "monitoring"
+    action: "retrain_ml_model"
+    description: "Retreina otimizador de ofertas (Reinforcement Learning)"
+    condition: "${inputs.retrain_ml_models == true}"
+    inputs:
+      model_name: "offer_optimizer"
+      training_data_days: 90
+      exploration_rate: 0.20
+    outputs:
+      - new_model_version
+      - roi_lift_improvement
+      - deployed
+    
+  - id: "generate_executive_report"
+    agent: "monitoring"
+    action: "generate_executive_report"
+    description: "Gera relatório executivo semanal consolidado"
+    inputs:
+      period: "${inputs.analysis_period}"
+      format: "pdf"
+      include_sections: ["summary", "highlights", "bottlenecks", "ml_performance", "recommendations"]
+      metrics:
+        total_recovered: "${generate_financial_dashboard.total_recovered}"
+        roi: "${generate_financial_dashboard.roi_percentage}"
+        bottlenecks: "${detect_bottlenecks.bottlenecks_identified}"
+        anomalies: "${detect_anomalies.anomalies_detected}"
+        ml_retrained: "${retrain_churn_predictor.deployed || retrain_objection_classifier.deployed || retrain_offer_optimizer.deployed}"
+    outputs:
+      - report_url
+      - key_insights
+      - action_items
+    
+  - id: "send_report_to_stakeholders"
+    agent: "monitoring"
+    action: "send_report_notification"
+    description: "Envia relatório por email para stakeholders"
+    inputs:
+      report_url: "${generate_executive_report.report_url}"
+      recipients: ["${config.stakeholders.email_list}"]
+      subject: "BMCR Weekly Analytics Report - ${workflow.execution_date}"
+    outputs:
+      - emails_sent
+
+outputs:
+  pipeline_dashboard_url: "${generate_pipeline_dashboard.dashboard_url}"
+  financial_dashboard_url: "${generate_financial_dashboard.financial_dashboard_url}"
+  executive_report_url: "${generate_executive_report.report_url}"
+  total_recovered: "${generate_financial_dashboard.total_recovered}"
+  roi_percentage: "${generate_financial_dashboard.roi_percentage}"
+  cost_per_recovery: "${generate_financial_dashboard.cost_per_recovery}"
+  bottlenecks_count: "${detect_bottlenecks.bottlenecks_identified.length}"
+  anomalies_count: "${detect_anomalies.anomalies_detected.length}"
+  ml_models_retrained: "${retrain_churn_predictor.deployed || retrain_objection_classifier.deployed || retrain_offer_optimizer.deployed}"
+  key_insights: "${generate_executive_report.key_insights}"
+  action_items: "${generate_executive_report.action_items}"
+
+error_handling:
+  retry_on_failure: true
+  max_retries: 2
+  continue_on_ml_failure: true  # Continua mesmo se retreinamento falhar
+  log_all_errors: true
+
+validation:
+  post_execution:
+    - check: "outputs.pipeline_dashboard_url != null"
+      error_message: "Dashboard de pipeline não foi gerado"
+    - check: "outputs.executive_report_url != null"
+      error_message: "Relatório executivo não foi gerado"
+
+kpis:
+  - name: "ml_model_accuracy"
+    target: ">= 80%"
+    description: "Acurácia média dos modelos ML"
+  
+  - name: "roi_lift_vs_baseline"
+    target: ">= +10%"
+    description: "ROI lift com ML vs sem ML"
+  
+  - name: "report_generation_time"
+    target: "< 5 minutes"
+    description: "Tempo para gerar relatório executivo"
+  
+  - name: "anomaly_detection_rate"
+    target: "100%"
+    description: "Taxa de detecção de anomalias críticas"

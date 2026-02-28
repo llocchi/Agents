@@ -1,0 +1,38 @@
+name: campaign-monitoring
+description: "Monitor active credit recovery campaigns with real-time metrics, KPIs, and performance dashboard"
+author: "BMAD Agent Builder"
+
+# Critical variables from config
+config_source: "{project-root}/_bmad/bmcr/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+date: system-generated
+
+# Workflow components
+installed_path: "{project-root}/_bmad/bmcr/workflows"
+instructions: "{installed_path}/campaign-monitoring/instructions.xml"
+dashboard_template: "{installed_path}/campaign-monitoring/dashboard.html"
+
+# Monitoring configuration
+campaign_id: "" # ID of campaign to monitor (empty = all active)
+monitoring_output: "{output_folder}/credit-recovery/monitoring"
+dashboard_file: "{monitoring_output}/dashboard-{date}.html"
+metrics_export: "{monitoring_output}/metrics-{date}.csv"
+
+# Metrics endpoints
+monitoring_api: "{config_source}:monitoring_tools"
+metrics_interval_seconds: 60
+
+# KPIs to track
+kpis:
+  - contact_rate
+  - response_rate
+  - conversion_rate
+  - avg_negotiation_time
+  - blocked_by_compliance
+  - avg_discount_offered
+  - vpl_recovered
+  - campaign_roi
+
+standalone: true

@@ -1,0 +1,29 @@
+name: bmcr-identification
+displayName: "Guardian 🔐"
+module: bmcr
+enabled: true
+version: "2.0.0"
+description: "Agente de Identificação e Autenticação LGPD-compliant"
+
+customization:
+  persona_override: null
+  system_prompt_additions: null
+  menu_additions: null
+  
+settings:
+  max_authentication_attempts: 3
+  require_2fa_threshold: 70  # Score de risco acima de 70 aciona 2FA
+  identification_timeout_seconds: 180
+  block_cpf_after_failures: true
+  
+integrations:
+  crm_lookup_enabled: true
+  sms_gateway_enabled: true
+  fraud_detection_enabled: true
+  audit_logging_enabled: true
+
+kpis:
+  target_identification_rate: 0.90  # 90%
+  target_fraud_block_rate: 0.05     # <5%
+  target_avg_time_seconds: 60
+  target_2fa_activation_rate: 0.12   # 10-15%

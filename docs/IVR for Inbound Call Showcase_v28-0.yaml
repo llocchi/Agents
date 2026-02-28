@@ -1,0 +1,342 @@
+inboundCall:
+  name: IVR for Inbound Call Showcase
+  division: Home
+  startUpRef: "/inboundCall/tasks/task[Updated Task_28]"
+  defaultLanguage: en-us
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        Genesys TTS:
+          voice: Jill
+  initialGreeting:
+    tts: Hi. Welcome to the Oltiva support center. I am Alex your virtual agent. Please be aware your calls may be recorded for security and training purposes.
+  variables:
+    - skillVariable:
+        name: Flow.AgentSkill
+        initialValue:
+          noValue: true
+    - stringVariable:
+        name: Flow.ContactID
+        initialValue:
+          noValue: true
+    - stringVariable:
+        name: Flow.FirstName
+        initialValue:
+          noValue: true
+    - stringVariable:
+        name: Flow.LastName
+        initialValue:
+          noValue: true
+    - stringVariable:
+        name: Flow.MobilePhone
+        initialValue:
+          noValue: true
+  settingsActionDefaults:
+    playAudioOnSilence:
+      timeout:
+        lit:
+          seconds: 40
+    detectSilence:
+      timeout:
+        lit:
+          seconds: 40
+    callData:
+      processingPrompt:
+        noValue: true
+    collectInput:
+      noEntryTimeout:
+        lit:
+          seconds: 5
+    dialByExtension:
+      interDigitTimeout:
+        lit:
+          seconds: 6
+    transferToUser:
+      connectTimeout:
+        noValue: true
+    transferToNumber:
+      connectTimeout:
+        noValue: true
+    transferToGroup:
+      connectTimeout:
+        noValue: true
+    transferToFlowSecure:
+      connectTimeout:
+        lit:
+          seconds: 15
+  settingsErrorHandling:
+    errorHandling:
+      disconnect:
+        none: true
+    preHandlingAudio:
+      tts: Sorry, an error occurred. Please try your call again.
+  settingsMenu:
+    extensionDialingMaxDelay:
+      lit:
+        seconds: 1
+    listenForExtensionDialing:
+      lit: true
+    menuSelectionTimeout:
+      lit:
+        seconds: 10
+    repeatCount:
+      lit: 3
+  settingsPrompts:
+    ensureAudioInPrompts: false
+    promptMediaToValidate:
+      - mediaType: audio
+      - mediaType: tts
+  settingsSpeechRec:
+    completeMatchTimeout:
+      lit:
+        ms: 100
+    incompleteMatchTimeout:
+      lit:
+        ms: 1500
+    maxSpeechLengthTimeout:
+      lit:
+        seconds: 20
+    minConfidenceLevel:
+      lit: 50
+    asrCompanyDir: none
+    asrEnabledOnFlow: true
+    suppressRecording: false
+  menus:
+    - menu:
+        name: Main Menu
+        refId: Main Menu_10
+        audio:
+          exp: AudioPlaybackOptions(Append(ToAudioTTS("Hello"), ToAudioTTS(Flow.FirstName), ToAudioTTS("How can I help you today?")), true)
+        settingsMenu:
+          extensionDialingMaxDelay:
+            noValue: true
+          listenForExtensionDialing:
+            noValue: true
+          menuSelectionTimeout:
+            noValue: true
+          repeatCount:
+            noValue: true
+        settingsSpeechRec:
+          completeMatchTimeout:
+            noValue: true
+          incompleteMatchTimeout:
+            noValue: true
+          maxSpeechLengthTimeout:
+            noValue: true
+          minConfidenceLevel:
+            noValue: true
+        choices:
+          - menuDisconnect:
+              name: Disconnect
+              dtmf: digit_2
+              globalDtmf: true
+              globalSpeechRecTerms: true
+              speechRecTerms:
+                en-us:
+                  terms:
+                    - Disconnect
+                    - end
+                    - two
+          - menuTask:
+              name: New Task 2
+              dtmf: digit_1
+              globalDtmf: true
+              globalSpeechRecTerms: true
+              task:
+                actions:
+                  - setParticipantData:
+                      name: Set Participant Data
+                      attributes:
+                        - attribute:
+                            name:
+                              lit: PT_contactId
+                            value:
+                              exp: Flow.ContactID
+                        - attribute:
+                            name:
+                              lit: PT_FullName
+                            value:
+                              exp: "Trim(Append(\n    ToString(Flow.FirstName), \n    If(IsNotSetOrEmpty(ToString(Flow.FirstName)), \"\", \" \"), \n    ToString(Flow.LastName)))"
+                        - attribute:
+                            name:
+                              lit: PT_MobilePhone
+                            value:
+                              exp: Flow.MobilePhone
+                  - transferToAcd:
+                      name: Transfer to ACD
+                      targetQueue:
+                        lit:
+                          name: DCCP Agent Queue Showcase
+                      preTransferAudio:
+                        exp: AudioPlaybackOptions(Append(ToAudioTTS(Flow.FirstName), ToAudioTTS("We will be connecting to an agent")), true)
+                      failureTransferAudio:
+                        tts: Sorry there are no agents available
+                      priority:
+                        lit: 0
+                      preferredAgents:
+                        noValue: true
+                      languageSkill:
+                        noValue: true
+                      directAgent:
+                        noValue: true
+                      failureOutputs:
+                        errorType:
+                          noValue: true
+                        errorMessage:
+                          noValue: true
+                  - disconnect:
+                      name: Disconnect
+              speechRecTerms:
+                en-us:
+                  terms:
+                    - agent
+                    - call
+                    - one
+                    - I want to resume my electrical vehicle subscription
+                    - I want to suspend my electrical vehicle subscription.
+                    - suspend
+                    - recover
+                    - electrical
+                    - vehicle
+                    - subscription
+                    - resume
+                    - resume subscription
+                    - I want to get an update regarding my battery issue case
+                    - battery issue
+                    - i want to Book Appointment
+                    - i want to cancel Appointment
+                    - i want to modify Appointment date
+                    - i want to update Appointment date
+  tasks:
+    - task:
+        name: New Task 1
+        refId: New Task 1_12
+        actions:
+          - callData:
+              name: Call Data Action
+              processingPrompt:
+                noValue: true
+              timeout:
+                lit:
+                  minutes: 1
+              category:
+                Microsoft Dynamics 365 Data Actions Showcase:
+                  dataAction:
+                    Get Contact By CustomerID Showcase:
+                      inputs:
+                        CUSTOMER_ID:
+                          lit: Call.Ani
+                      successOutputs:
+                        contactid:
+                          var: Flow.ContactID
+                        firstname:
+                          var: Flow.FirstName
+                        lastname:
+                          var: Flow.LastName
+                        telephone1:
+                          noValue: true
+                        telephone2:
+                          noValue: true
+                        telephone3:
+                          noValue: true
+                        mobilephone:
+                          var: Flow.MobilePhone
+              outputs:
+                success:
+                  actions:
+                    - jumpToMenu:
+                        name: Jump to Menu
+                        targetMenuRef: "/inboundCall/menus/menu[Main Menu_10]"
+                failure:
+                  actions:
+                    - transferToAcd:
+                        name: Transfer to ACD
+                        targetQueue:
+                          lit:
+                            name: DCCP Agent Queue Showcase
+                        preTransferAudio:
+                          tts: Hi! We are unable to identify you. We are connecting to an agent
+                        failureTransferAudio:
+                          tts: Sorry agents are not available
+                        priority:
+                          lit: 0
+                        preferredAgents:
+                          noValue: true
+                        languageSkill:
+                          noValue: true
+                        directAgent:
+                          noValue: true
+                        failureOutputs:
+                          errorType:
+                            noValue: true
+                          errorMessage:
+                            noValue: true
+          - disconnect:
+              name: Disconnect
+    - task:
+        name: Updated Task
+        refId: Updated Task_28
+        actions:
+          - callData:
+              name: Call Data Action
+              processingPrompt:
+                noValue: true
+              timeout:
+                lit:
+                  minutes: 1
+              category:
+                Web Services Data Actions Showcase:
+                  dataAction:
+                    Get Contact on phone number:
+                      inputs:
+                        PHONE_NUMBER:
+                          exp: "Replace(Replace(Call.Ani, \"+\", \"%2B\"), \"tel:\", \"\")"
+                      successOutputs:
+                        contactid:
+                          var: Flow.ContactID
+                        firstname:
+                          var: Flow.FirstName
+                        lastname:
+                          var: Flow.LastName
+                        telephone1:
+                          noValue: true
+                        telephone2:
+                          noValue: true
+                        telephone3:
+                          noValue: true
+                        mobilephone:
+                          var: Flow.MobilePhone
+              outputs:
+                success:
+                  actions:
+                    - jumpToMenu:
+                        name: Jump to Menu
+                        targetMenuRef: "/inboundCall/menus/menu[Main Menu_10]"
+                failure:
+                  actions:
+                    - transferToAcd:
+                        name: Transfer to ACD
+                        targetQueue:
+                          lit:
+                            name: DCCP Agent Queue Showcase
+                        preTransferAudio:
+                          tts: Hi! We are unable to identify you. We are connecting to an agent
+                        failureTransferAudio:
+                          tts: Sorry agents are not available
+                        priority:
+                          lit: 0
+                        preferredAgents:
+                          noValue: true
+                        languageSkill:
+                          noValue: true
+                        directAgent:
+                          noValue: true
+                        failureOutputs:
+                          errorType:
+                            noValue: true
+                          errorMessage:
+                            noValue: true
+          - disconnect:
+              name: Disconnect

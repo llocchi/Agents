@@ -1,0 +1,32 @@
+name: bmcr-monitoring
+displayName: "Insights Analyst 📊"
+module: bmcr
+enabled: true
+version: "2.0.0"
+description: "Agente de Analytics, BI e ML Retraining"
+
+customization:
+  persona_override: null
+  system_prompt_additions: null
+  menu_additions: null
+  
+settings:
+  metrics_collection_interval_minutes: 5
+  anomaly_detection_enabled: true
+  ml_retraining_interval_days: 30
+  dashboard_refresh_seconds: 60
+  executive_report_frequency: "weekly"
+  
+integrations:
+  data_warehouse: "bigquery"  # ou Snowflake
+  dashboard_generator: "powerbi"  # ou Looker, Tableau
+  anomaly_detector_ml_enabled: true
+  roi_calculator_enabled: true
+  ml_retrainer_enabled: true
+  report_generator_enabled: true
+
+kpis:
+  target_ml_accuracy: 0.80              # ≥80%
+  target_roi_lift_vs_baseline: 0.10     # ≥+10%
+  target_exploration_rate: 0.175        # 15-20%
+  target_inference_time_ms: 500         # <500ms

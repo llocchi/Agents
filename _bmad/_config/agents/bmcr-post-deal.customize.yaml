@@ -1,0 +1,33 @@
+name: bmcr-post-deal
+displayName: "Post-Deal Monitor 🔁"
+module: bmcr
+enabled: true
+version: "2.0.0"
+description: "Agente de Monitoramento Pós-Acordo e Prevenção de Churn"
+
+customization:
+  persona_override: null
+  system_prompt_additions: null
+  menu_additions: null
+  
+settings:
+  reminder_d_minus_3: true
+  reminder_d_minus_1: true
+  reminder_d_plus_1: true
+  reminder_d_plus_3: true
+  max_messages_without_response: 3
+  churn_prediction_enabled: true
+  
+integrations:
+  agreement_monitor_enabled: true
+  payment_status_tracker_enabled: true
+  reminder_scheduler_enabled: true
+  churn_predictor_ml_enabled: true
+  renegotiation_engine_enabled: true
+  nps_collector_enabled: true
+
+kpis:
+  target_churn_rate: 0.15                # <15%
+  target_reminder_response_rate: 0.60    # ≥60%
+  target_proactive_renegotiation_success: 0.70  # ≥70%
+  target_nps: 4.2                        # ≥4.2/5

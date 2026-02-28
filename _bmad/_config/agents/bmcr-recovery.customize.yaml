@@ -1,0 +1,6 @@
+id: bmcr-recovery
+name: recovery
+display_name: Super Agent
+module: bmcr
+enabled: true
+version: 2.0.0

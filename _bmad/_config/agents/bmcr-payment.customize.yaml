@@ -1,0 +1,33 @@
+name: bmcr-payment
+displayName: "Payment Manager 💳"
+module: bmcr
+enabled: true
+version: "2.0.0"
+description: "Agente de Gerenciamento de Pagamentos"
+
+customization:
+  persona_override: null
+  system_prompt_additions: null
+  menu_additions: null
+  
+settings:
+  pix_enabled: true
+  boleto_enabled: true
+  credit_card_enabled: true
+  auto_debit_enabled: true
+  pix_expiration_minutes: 60
+  boleto_expiration_days: 3
+  
+integrations:
+  pix_gateway: "bacen_psp"
+  boleto_generator: "bb_api"  # Banco do Brasil ou Bradesco
+  payment_gateway: "stripe"    # ou PagSeguro, Mercado Pago
+  auto_debit_bacen_enabled: true
+  webhook_listener_enabled: true
+  receipt_generator_enabled: true
+
+kpis:
+  target_first_payment_conversion: 0.90  # ≥90%
+  target_pix_usage_rate: 0.60            # ≥60%
+  target_avg_payment_time_minutes: 10
+  target_auto_debit_setup_rate: 0.40     # ≥40%

@@ -1,0 +1,6 @@
+id: bmcr-communication
+name: communication
+display_name: Wordsmith
+module: bmcr
+enabled: true
+version: 1.0.0

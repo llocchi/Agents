@@ -1,0 +1,15 @@
+﻿# BMAD Method v6 - Git Ignore
+__pycache__/
+*.py[cod]
+venv/
+env/
+.env
+.env.local
+*.key
+credentials.json
+node_modules/
+_bmad-output/
+*.log
+*.db
+.DS_Store
+Thumbs.db

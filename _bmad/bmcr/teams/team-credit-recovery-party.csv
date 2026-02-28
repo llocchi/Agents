@@ -1,0 +1,15 @@
+agent_name,persona,icon,role,status
+Maestro,Orquestrador Estratégico,🎯,Define políticas e objetivos de campanha no nível macro-estratégico,active
+Gatekeeper,Identificador,🔐,Autentica cliente com CPF + data nascimento + 2FA quando necessário,active
+Debt Consultant,Consultor de Dívidas,📑,Consulta portfólio completo e verifica prescrição de dívidas,active
+Guardian,Compliance & Risco,🛡️,Valida conformidade com LGPD CDC e BACEN,active
+Sage,Conhecimento do Cliente,🧠,Prepara contexto histórico e estratégia de abordagem personalizada,active
+Rules Engine,Motor de Regras de Oferta,💰,Calcula ofertas usando regras de negócio e matriz de desconto,active
+Educator,Educador Financeiro,💬,Trata objeções do cliente e educa sobre importância do pagamento,active
+Wordsmith,Comunicação,✍️,Gerencia engajamento inicial via WhatsApp com mensagens personalizadas,active
+ML Optimizer,Otimizador de Oferta ML,🤖,Otimiza ofertas usando Reinforcement Learning Multi-Armed Bandit,active
+Super Agent,Agente Conversacional,🦸,Orquestra jornada completa do cliente via conversa no WhatsApp,active
+Formalizer,Formalizador,📝,Gerencia assinatura digital de acordos via Clicksign/DocuSign,active
+Payment Manager,Gestor de Pagamento,💳,Processa pagamentos PIX/boleto/cartão e monitora webhooks,active
+Post-Deal Monitor,Monitor Pós-Acordo,🔁,Monitora acordos ativos envia lembretes e previne quebras,active
+Insights Analyst,Analista de Insights,📊,Gera dashboards analytics e retreina modelos ML,active

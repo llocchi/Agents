@@ -1,0 +1,202 @@
+# Post-Deal Monitoring Workflow
+# BMCR v2.0 - Monitoramento de Acordos Ativos e Prevenção de Churn
+
+config_source: _bmad/bmcr/config.yaml
+
+workflow:
+  name: "post-deal-monitoring"
+  version: "2.0.0"
+  description: "Monitora acordos ativos, envia lembretes e previne quebras (churn)"
+  
+trigger:
+  type: "scheduled"
+  schedule: "0 9 * * *"  # Diariamente às 9h
+  description: "Executa monitoramento diário de todos os acordos ativos"
+
+inputs:
+  - name: "monitoring_mode"
+    type: "string"
+    required: false
+    default: "auto"
+    options: ["auto", "manual", "specific_agreement"]
+    description: "Modo de monitoramento: automático (todos), manual ou acordo específico"
+  
+  - name: "agreement_id"
+    type: "string"
+    required: false
+    description: "ID do acordo específico (se mode=specific_agreement)"
+
+steps:
+  - id: "fetch_active_agreements"
+    agent: "post-deal"
+    action: "get_active_agreements"
+    description: "Busca todos os acordos ativos no CRM"
+    inputs:
+      filters:
+        status: "active"
+    outputs:
+      - agreements_list
+      - total_active_count
+    
+  - id: "identify_upcoming_due_dates"
+    agent: "post-deal"
+    action: "filter_by_due_date"
+    description: "Identifica parcelas com vencimento próximo (D-3, D-1, D0)"
+    inputs:
+      agreements: "${fetch_active_agreements.agreements_list}"
+      days_range: [-3, 0]
+    outputs:
+      - d_minus_3_list
+      - d_minus_1_list
+      - d_0_list
+    
+  - id: "send_reminders_d_minus_3"
+    agent: "post-deal"
+    action: "send_reminder"
+    description: "Envia lembretes D-3 (3 dias antes do vencimento)"
+    inputs:
+      agreements: "${identify_upcoming_due_dates.d_minus_3_list}"
+      timing: "D-3"
+      message_template: "friendly_reminder_early"
+    outputs:
+      - reminders_sent_count
+      - delivery_failures
+    
+  - id: "send_reminders_d_minus_1"
+    agent: "post-deal"
+    action: "send_reminder"
+    description: "Envia lembretes D-1 (1 dia antes)"
+    inputs:
+      agreements: "${identify_upcoming_due_dates.d_minus_1_list}"
+      timing: "D-1"
+      message_template: "friendly_reminder_urgent"
+    outputs:
+      - reminders_sent_count
+      - delivery_failures
+    
+  - id: "send_reminders_d_0"
+    agent: "post-deal"
+    action: "send_reminder"
+    description: "Envia lembretes D0 (dia do vencimento)"
+    inputs:
+      agreements: "${identify_upcoming_due_dates.d_0_list}"
+      timing: "D0"
+      message_template: "due_today"
+    outputs:
+      - reminders_sent_count
+      - delivery_failures
+    
+  - id: "detect_overdue_payments"
+    agent: "post-deal"
+    action: "detect_default"
+    description: "Detecta pagamentos em atraso (D+1, D+3)"
+    inputs:
+      agreements: "${fetch_active_agreements.agreements_list}"
+      days_overdue_min: 1
+    outputs:
+      - overdue_d_plus_1
+      - overdue_d_plus_3
+      - overdue_critical_7_plus
+    
+  - id: "send_overdue_notifications"
+    agent: "post-deal"
+    action: "send_reminder"
+    description: "Notifica clientes com parcelas atrasadas"
+    inputs:
+      agreements: "${detect_overdue_payments.overdue_d_plus_1}"
+      timing: "D+1"
+      message_template: "payment_overdue_day1"
+    outputs:
+      - notifications_sent
+    
+  - id: "predict_churn_risk"
+    agent: "post-deal"
+    action: "predict_churn_risk"
+    description: "Modelo ML prevê risco de quebra de acordo"
+    inputs:
+      agreements: "${fetch_active_agreements.agreements_list}"
+    outputs:
+      - high_risk_agreements
+      - medium_risk_agreements
+      - churn_predictions
+    
+  - id: "proactive_renegotiation"
+    agent: "post-deal"
+    action: "renegotiate_installments"
+    description: "Oferece renegociação proativa para acordos de alto risco"
+    inputs:
+      agreements: "${predict_churn_risk.high_risk_agreements}"
+      flexibility:
+        extend_remaining: true
+        reduce_installment_value: true
+        add_grace_period: 15  # dias
+    outputs:
+      - renegotiation_offers_sent
+      - acceptance_count
+    
+  - id: "positive_reinforcement"
+    agent: "post-deal"
+    action: "send_positive_reinforcement"
+    description: "Envia mensagens de parabéns para pagamentos bem-sucedidos"
+    inputs:
+      paid_today: true
+    outputs:
+      - reinforcements_sent
+    
+  - id: "escalate_broken_deals"
+    agent: "post-deal"
+    action: "escalate_broken_deal"
+    description: "Escala acordos quebrados (7+ dias atraso sem resposta) para humanos"
+    inputs:
+      agreements: "${detect_overdue_payments.overdue_critical_7_plus}"
+    outputs:
+      - escalated_count
+      - escalation_tickets
+    
+  - id: "generate_daily_report"
+    agent: "post-deal"
+    action: "generate_monitoring_report"
+    description: "Gera relatório diário de monitoramento"
+    inputs:
+      date: "${workflow.execution_date}"
+      reminders_sent: "${send_reminders_d_minus_3.reminders_sent_count + send_reminders_d_minus_1.reminders_sent_count + send_reminders_d_0.reminders_sent_count}"
+      overdue_count: "${detect_overdue_payments.overdue_d_plus_1.length + detect_overdue_payments.overdue_d_plus_3.length}"
+      escalated: "${escalate_broken_deals.escalated_count}"
+      renegotiations: "${proactive_renegotiation.renegotiation_offers_sent}"
+    outputs:
+      - report_pdf_url
+      - report_summary
+
+outputs:
+  total_active_agreements: "${fetch_active_agreements.total_active_count}"
+  reminders_sent_total: "${send_reminders_d_minus_3.reminders_sent_count + send_reminders_d_minus_1.reminders_sent_count + send_reminders_d_0.reminders_sent_count}"
+  overdue_count: "${detect_overdue_payments.overdue_d_plus_1.length + detect_overdue_payments.overdue_d_plus_3.length}"
+  high_risk_count: "${predict_churn_risk.high_risk_agreements.length}"
+  escalated_count: "${escalate_broken_deals.escalated_count}"
+  daily_report_url: "${generate_daily_report.report_pdf_url}"
+
+error_handling:
+  retry_on_failure: true
+  max_retries: 2
+  escalate_after_retries: true
+  log_all_errors: true
+
+validation:
+  post_execution:
+    - check: "outputs.reminders_sent_total >= 0"
+      error_message: "Erro ao enviar lembretes"
+    - check: "outputs.daily_report_url != null"
+      error_message: "Relatório diário não foi gerado"
+
+kpis:
+  - name: "churn_rate"
+    target: "< 15%"
+    calculation: "escalated_count / total_active_agreements"
+  
+  - name: "reminder_response_rate"
+    target: ">= 60%"
+    description: "Taxa de clientes que pagam após lembrete"
+  
+  - name: "proactive_renegotiation_success"
+    target: ">= 70%"
+    description: "Taxa de sucesso em renegociações proativas"

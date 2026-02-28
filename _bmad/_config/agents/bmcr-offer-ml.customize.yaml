@@ -1,0 +1,32 @@
+name: bmcr-offer-ml
+displayName: "ML Optimizer 🤖"
+module: bmcr
+enabled: true
+version: "2.0.0"
+description: "Agente de Otimização ML de Propostas"
+
+customization:
+  persona_override: null
+  system_prompt_additions: null
+  menu_additions: null
+  
+settings:
+  ml_model: "multi_armed_bandit"  # ou DQN
+  exploration_rate: 0.20  # 20% exploration, 80% exploitation
+  ab_test_enabled: true
+  ab_test_split: 0.50
+  fallback_to_rules_on_error: true
+  
+integrations:
+  ml_model_api_enabled: true
+  offer_adjuster_enabled: true
+  ab_test_manager_enabled: true
+  roi_predictor_enabled: true
+  decision_logger_enabled: true
+  model_performance_tracker_enabled: true
+
+kpis:
+  target_roi_lift_vs_baseline: 0.10  # ≥+10%
+  target_model_accuracy: 0.80        # ≥80%
+  target_exploration_rate: 0.175     # 15-20%
+  target_inference_time_ms: 500      # <500ms

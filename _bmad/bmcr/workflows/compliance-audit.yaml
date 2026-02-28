@@ -1,0 +1,38 @@
+name: compliance-audit
+description: "Execute comprehensive compliance audit for credit recovery operations ensuring LGPD, BACEN, and CDC adherence"
+author: "BMAD Agent Builder"
+
+# Critical variables from config
+config_source: "{project-root}/_bmad/bmcr/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+date: system-generated
+
+# Workflow components
+installed_path: "{project-root}/_bmad/bmcr/workflows"
+instructions: "{installed_path}/compliance-audit/instructions.xml"
+checklist: "{installed_path}/compliance-audit/checklist.md"
+
+# Audit configuration
+audit_period_start: "" # YYYY-MM-DD
+audit_period_end: "" # YYYY-MM-DD
+audit_output: "{output_folder}/credit-recovery/audits"
+audit_report: "{audit_output}/audit-{date}.md"
+compliance_score: "{audit_output}/compliance-score-{date}.json"
+
+# Compliance checks
+lgpd_validation: "{config_source}:lgpd_validation"
+regulatory_rules: "{config_source}:compliance_check"
+
+# Audit scope
+checks:
+  - lgpd_consent_validation
+  - contact_time_compliance
+  - contact_frequency_compliance
+  - judicial_restrictions_check
+  - message_content_compliance
+  - data_retention_compliance
+  - audit_trail_completeness
+
+standalone: true
